@@ -16,9 +16,9 @@ CONF = ConnectionConfig(
     MAIL_USERNAME=os.getenv('MAIL_USERNAME', default=''),
     MAIL_PASSWORD=os.getenv('MAIL_PASSWORD', default=''),
     MAIL_FROM=EmailStr(os.getenv('MAIL_FROM', default='')),
-    MAIL_PORT=int(os.getenv('MAIL_PORT', default=587)),
+    MAIL_PORT=int(os.getenv('MAIL_PORT', default=25)),
     MAIL_SERVER=os.getenv('MAIL_SERVER', default=''),
-    MAIL_TLS=bool(os.getenv('MAIL_TLS', default=True)),
+    MAIL_TLS=bool(os.getenv('MAIL_TLS', default=False)),
     MAIL_SSL=bool(os.getenv('MAIL_SSL', default=False)),
 )
 
