@@ -1,3 +1,4 @@
+import logging
 import os
 import uuid
 
@@ -8,6 +9,7 @@ from pydantic import BaseModel, EmailStr
 from starlette.responses import JSONResponse
 
 load_dotenv()
+log = logging.getLogger("uvicorn.info")
 
 ENDPOINT = os.getenv('ENDPOINT', default=uuid.uuid4())
 HOST = os.getenv('HOST', default='127.0.0.1')
@@ -41,6 +43,13 @@ async def send_email(
     email: EmailSchema,
     request: Request
 ) -> JSONResponse:
+
+    msg = (
+        f"to:{request.headers.get('host')} "
+        f"from:{request.client.host}:{request.client.port} "
+        f"ref:{request.headers.get('referer')}"
+    )
+    log.info(msg)
 
     if request.headers.get('host') != HOST:
         return JSONResponse(status_code=403, content={'message': 'you are not wellcome here.'})
