@@ -29,7 +29,10 @@ class EmailSchema(BaseModel):
     phone: str
 
 
-app = FastAPI()
+app = FastAPI(
+    docs_url=None,
+    redoc_url=None
+)
 
 
 @app.post(f"/{ENDPOINT}/")
