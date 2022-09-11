@@ -6,12 +6,14 @@ from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
 from pydantic import BaseModel, EmailStr
+from starlette import status
 from starlette.responses import JSONResponse
 
 load_dotenv()
 log = logging.getLogger("uvicorn.info")
 
 ENDPOINT = os.getenv('ENDPOINT', default=uuid.uuid4())
+REFERER = os.getenv('REFERER', default='')
 HOST = os.getenv('HOST', default='127.0.0.1')
 
 CONF = ConnectionConfig(
@@ -44,19 +46,37 @@ async def send_email(
     request: Request
 ) -> JSONResponse:
 
-    msg = (
+    log.info((
         f"to:{request.headers.get('host')} "
         f"from:{request.client.host}:{request.client.port} "
         f"ref:{request.headers.get('referer')}"
-    )
-    log.info(msg)
+    ))
+
+    if request.headers.get('content-type', None) != 'application/json':
+        return JSONResponse(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            content={'message': 'Unsupported media type.'}
+        )
+
+    if request.headers.get('referer') != REFERER:
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={'message': 'you are not wellcome here.'}
+        )
 
     if request.headers.get('host') != HOST:
-        return JSONResponse(status_code=403, content={'message': 'you are not wellcome here.'})
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={'message': 'you are not wellcome here.'}
+        )
 
     message = MessageSchema(
         subject='Заявка с сайта',
-        recipients=[EmailStr(os.getenv('RECIPIENT', default='nobody@example.com'))],
+        recipients=[
+            EmailStr(
+                os.getenv('RECIPIENT', default='nobody@example.com')
+            )
+        ],
         body=(
             f"""
             Имя: {email.dict().get('name')}
@@ -72,4 +92,7 @@ async def send_email(
 
     bg.add_task(fm.send_message, message)
 
-    return JSONResponse(status_code=200, content={'message': 'email sent.'})
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={'message': 'email sent.'}
+    )
