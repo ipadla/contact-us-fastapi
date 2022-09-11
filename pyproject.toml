@@ -1,5 +1,6 @@
 [tool.flake8]
 ignore =
+    E501,
     W503,
     F811
 
