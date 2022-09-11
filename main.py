@@ -1,13 +1,16 @@
 import logging
 import os
+import sys
 import uuid
 
+import uvicorn
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
 from pydantic import BaseModel, EmailStr
 from starlette import status
 from starlette.responses import JSONResponse
+from uvicorn.config import LOGGING_CONFIG
 
 load_dotenv()
 log = logging.getLogger("uvicorn.info")
@@ -15,6 +18,9 @@ log = logging.getLogger("uvicorn.info")
 ENDPOINT = os.getenv('ENDPOINT', default=uuid.uuid4())
 REFERER = os.getenv('REFERER', default='')
 HOST = os.getenv('HOST', default='127.0.0.1')
+
+CORN_HOST = os.getenv('CORN_HOST', default='127.0.0.1')
+CORN_PORT = os.getenv('CORN_PORT', default='8000')
 
 CONF = ConnectionConfig(
     MAIL_USERNAME=os.getenv('MAIL_USERNAME', default=''),
@@ -96,3 +102,29 @@ async def send_email(
         status_code=status.HTTP_200_OK,
         content={'message': 'email sent.'}
     )
+
+
+def main() -> None:
+    root_path = ''
+    if len(sys.argv) >= 2:
+        root_path = sys.argv[1]
+
+    LOGGING_CONFIG["formatters"]["access"]["fmt"] = '%(asctime)s %(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s'
+    LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s %(levelprefix)s %(message)s"
+
+    date_fmt = "%Y-%m-%d %H:%M:%S"
+    LOGGING_CONFIG["formatters"]["default"]["datefmt"] = date_fmt
+    LOGGING_CONFIG["formatters"]["access"]["datefmt"] = date_fmt
+
+    uvicorn.run(
+        "main:app",
+        host=CORN_HOST,
+        port=int(CORN_PORT),
+        log_level='info',
+        proxy_headers=True,
+        root_path=root_path
+    )
+
+
+if __name__ == '__main__':
+    main()
