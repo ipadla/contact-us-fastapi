@@ -109,8 +109,13 @@ def main() -> None:
     if len(sys.argv) >= 2:
         root_path = sys.argv[1]
 
-    LOGGING_CONFIG["formatters"]["access"]["fmt"] = '%(asctime)s %(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s'
-    LOGGING_CONFIG["formatters"]["default"]["fmt"] = "%(asctime)s %(levelprefix)s %(message)s"
+    LOGGING_CONFIG["formatters"]["access"]["fmt"] = (
+        '%(asctime)s %(levelprefix)s %(client_addr)s - '
+        '"%(request_line)s" %(status_code)s'
+    )
+    LOGGING_CONFIG["formatters"]["default"]["fmt"] = (
+        "%(asctime)s %(levelprefix)s %(message)s"
+    )
 
     date_fmt = "%Y-%m-%d %H:%M:%S"
     LOGGING_CONFIG["formatters"]["default"]["datefmt"] = date_fmt
