@@ -7,7 +7,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, constr, EmailStr
 from starlette import status
 from starlette.responses import JSONResponse
 from uvicorn.config import LOGGING_CONFIG
@@ -34,9 +34,9 @@ CONF = ConnectionConfig(
 
 
 class EmailSchema(BaseModel):
-    name: str
+    name: constr(max_length=128)
     message: str
-    phone: str
+    phone: constr(max_length=64)
 
 
 app = FastAPI(
@@ -54,7 +54,7 @@ async def send_email(
 
     log.info((
         f"to:{request.headers.get('host')} "
-        f"from:{request.client.host}:{request.client.port} "
+        f"from:{request.client} "
         f"ref:{request.headers.get('referer')}"
     ))
 
